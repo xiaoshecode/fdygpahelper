@@ -1,6 +1,6 @@
 {
   "name": "gpa-helper",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "packageManager": "yarn@1.22.22",
   "scripts": {

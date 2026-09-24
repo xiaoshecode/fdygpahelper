@@ -10,12 +10,17 @@ const DEFAULT_TEXT = '点击上传成绩册（可多选 .xls / .xlsx）'
 const LOADING_TEXT = '计算中，请稍候…'
 
 document.querySelector<HTMLDivElement>('#root')!.innerHTML = `
+  <button class="theme-toggle" id="theme-toggle" aria-label="切换深色模式" title="切换深色模式"></button>
+
   <main class="container">
-    <h1 class="title">
-      <img src="${logo}" alt="logo" />
-      <span>GPAHelper <em>for Fdy</em></span>
-      <span class="version">v${version}</span>
-    </h1>
+    <header class="header">
+      <h1 class="title">
+        <img src="${logo}" alt="logo" />
+        <span>GPAHelper <em>for Fdy</em></span>
+        <span class="version">v${version}</span>
+      </h1>
+      <p class="tagline">清华大学辅导员 GPA 计算工具 · 纯浏览器本地计算，数据不上传</p>
+    </header>
 
     <div class="upload-block" id="upload" role="button" tabindex="0" aria-label="上传成绩册">
       <span class="spinner" hidden></span>
@@ -47,9 +52,15 @@ document.querySelector<HTMLDivElement>('#root')!.innerHTML = `
         </ul>
       </section>
 
-      <section class="card">
-        <h2>更新日志</h2>
+      <details class="card">
+        <summary>
+          更新日志
+          <span class="latest">最近：v${version}</span>
+          <span class="chevron">▶</span>
+        </summary>
         <ul>
+          <li>2026.09.24: 0.3.1 界面优化——支持深色模式（跟随系统，右上角可手动切换并记忆选择）；
+            更新日志折叠展示，页脚整合联系方式</li>
           <li>2026.09.24: 0.3.0 精简升级——去除 React / antd，改为纯 TypeScript 实现，页面加载更快；
             支持上传 .xlsx 文件；排名改用未四舍五入的精确成绩，GPA 完全相同者并列同一名次，
             仅显示值相同的情况在“备注”列说明；部署仅保留 GitHub Actions</li>
@@ -63,19 +74,36 @@ document.querySelector<HTMLDivElement>('#root')!.innerHTML = `
           <li>2022.01.20: 美化用户界面，支持多文件上传</li>
           <li>2021.01.23: 部署 GPA 计算工具在线版，支持单个文件上传</li>
         </ul>
-      </section>
-
-      <section class="card">
-        <h2>联系方式</h2>
-        <ul>
-          <li>邮箱：<code>shejp20@gmail.com</code></li>
-          <li>感谢原作者 <a href="https://github.com/PowerfooI" target="_blank" rel="noreferrer">powerfooi</a> 的贡献与支持</li>
-        </ul>
-      </section>
+      </details>
     </div>
+
+    <footer class="footer">
+      <p>联系方式：<code>shejp20@gmail.com</code></p>
+      <p>感谢原作者 <a href="https://github.com/PowerfooI" target="_blank" rel="noreferrer">powerfooi</a> 的贡献与支持 ·
+        <a href="https://github.com/xiaoshecode/fdygpahelper" target="_blank" rel="noreferrer">源代码</a></p>
+    </footer>
   </main>
 `
 
+/* ---------- 主题切换 ---------- */
+const rootEl = document.documentElement
+const themeToggle = document.getElementById('theme-toggle')!
+
+function refreshThemeIcon() {
+  themeToggle.textContent = rootEl.dataset.theme === 'dark' ? '☀️' : '🌙'
+}
+themeToggle.addEventListener('click', () => {
+  rootEl.dataset.theme = rootEl.dataset.theme === 'dark' ? 'light' : 'dark'
+  try {
+    localStorage.setItem('theme', rootEl.dataset.theme)
+  } catch (e) {
+    // 隐私模式下 localStorage 可能不可用，忽略即可
+  }
+  refreshThemeIcon()
+})
+refreshThemeIcon()
+
+/* ---------- 上传与计算 ---------- */
 const upload = document.getElementById('upload')!
 const spinner = upload.querySelector<HTMLElement>('.spinner')!
 const text = upload.querySelector<HTMLElement>('.text')!

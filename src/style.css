@@ -1,14 +1,43 @@
+/* ============ 主题变量 ============ */
 :root {
+  color-scheme: light;
   --primary: #9254de;
-  --primary-dark: #6d28b8;
+  --primary-strong: #6d28b8;
   --primary-soft: #f0e7fb;
   --text: #2b2735;
   --text-secondary: #5f5872;
   --bg: #f7f5fb;
+  --bg-glow: rgba(146, 84, 222, 0.10);
   --card: #ffffff;
   --border: #eae4f4;
+  --upload-from: #f3ebfd;
+  --upload-to: #e7d9fa;
+  --upload-border: #c9aef0;
+  --shadow-card: 0 2px 10px rgba(80, 60, 120, 0.05);
+  --shadow-upload: 0 6px 18px rgba(146, 84, 222, 0.12);
+  --shadow-upload-hover: 0 12px 26px rgba(146, 84, 222, 0.20);
 }
 
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --primary: #b388f0;
+  --primary-strong: #cba8f5;
+  --primary-soft: #2b2140;
+  --text: #e9e4f2;
+  --text-secondary: #a79dba;
+  --bg: #14101c;
+  --bg-glow: rgba(179, 136, 240, 0.08);
+  --card: #1f1929;
+  --border: #342a47;
+  --upload-from: #2a2040;
+  --upload-to: #241b36;
+  --upload-border: #5b4480;
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.30);
+  --shadow-upload: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --shadow-upload-hover: 0 12px 26px rgba(0, 0, 0, 0.45);
+}
+
+/* ============ 基础 ============ */
 * {
   box-sizing: border-box;
 }
@@ -17,13 +46,15 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(1000px 400px at 80% -10%, rgba(146, 84, 222, 0.10), transparent),
+    radial-gradient(1000px 400px at 80% -10%, var(--bg-glow), transparent),
     var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
     'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+  line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 code {
@@ -43,20 +74,48 @@ a:hover {
 }
 
 .container {
-  max-width: 860px;
+  max-width: 840px;
   margin: 0 auto;
-  padding: 56px 24px 80px;
+  padding: 56px 24px 48px;
 }
 
-/* 标题 */
+/* ============ 主题切换按钮 ============ */
+.theme-toggle {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, background-color 0.25s ease;
+}
+.theme-toggle:hover {
+  transform: scale(1.08);
+}
+
+/* ============ 标题区 ============ */
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
 .title {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   gap: 14px;
-  margin: 0 0 36px;
-  font-size: 34px;
+  margin: 0;
+  font-size: 32px;
   font-weight: 700;
   letter-spacing: 0.5px;
 }
@@ -66,7 +125,7 @@ a:hover {
 }
 .title em {
   font-style: normal;
-  background: linear-gradient(120deg, var(--primary), #b388f0);
+  background: linear-gradient(120deg, var(--primary), #c39bf2);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -74,14 +133,19 @@ a:hover {
 .version {
   font-size: 13px;
   font-weight: 600;
-  color: var(--primary-dark);
+  color: var(--primary-strong);
   background: var(--primary-soft);
   border: 1px solid var(--border);
   padding: 3px 12px;
   border-radius: 999px;
 }
+.tagline {
+  margin: 12px 0 0;
+  font-size: 15px;
+  color: var(--text-secondary);
+}
 
-/* 上传区块 */
+/* ============ 上传区块 ============ */
 .upload-block {
   display: flex;
   align-items: center;
@@ -89,20 +153,20 @@ a:hover {
   gap: 12px;
   padding: 36px 20px;
   border-radius: 16px;
-  border: 1.5px dashed #c9aef0;
-  background: linear-gradient(120deg, #f3ebfd, #e7d9fa);
-  color: var(--primary-dark);
+  border: 1.5px dashed var(--upload-border);
+  background: linear-gradient(120deg, var(--upload-from), var(--upload-to));
+  color: var(--primary-strong);
   font-size: 20px;
   font-weight: 600;
   cursor: pointer;
   user-select: none;
-  box-shadow: 0 6px 18px rgba(146, 84, 222, 0.12);
+  box-shadow: var(--shadow-upload);
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 .upload-block:hover,
 .upload-block:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 12px 26px rgba(146, 84, 222, 0.20);
+  box-shadow: var(--shadow-upload-hover);
   outline: none;
 }
 .upload-block.loading {
@@ -113,7 +177,7 @@ a:hover {
 .spinner {
   width: 20px;
   height: 20px;
-  border: 3px solid rgba(146, 84, 222, 0.25);
+  border: 3px solid var(--primary-soft);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -124,7 +188,7 @@ a:hover {
   }
 }
 
-/* 说明卡片 */
+/* ============ 说明卡片 ============ */
 .demonstration {
   display: flex;
   flex-direction: column;
@@ -137,10 +201,12 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 24px 28px;
-  box-shadow: 0 2px 10px rgba(80, 60, 120, 0.05);
+  box-shadow: var(--shadow-card);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
-.card h2 {
+.card h2,
+.card summary {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -148,8 +214,10 @@ a:hover {
   font-size: 19px;
   font-weight: 700;
 }
-.card h2::before {
+.card h2::before,
+.card summary::before {
   content: '';
+  flex: none;
   width: 4px;
   height: 18px;
   border-radius: 2px;
@@ -158,18 +226,16 @@ a:hover {
 
 .card p {
   margin: 0;
-  line-height: 1.9;
   color: var(--text-secondary);
 }
 
 .card ul {
   margin: 0;
   padding-left: 1.3em;
-  line-height: 1.9;
   color: var(--text-secondary);
 }
 .card li + li {
-  margin-top: 6px;
+  margin-top: 8px;
 }
 .card strong {
   color: var(--text);
@@ -181,21 +247,70 @@ a:hover {
   padding: 12px 16px;
 }
 .notice strong {
-  color: var(--primary-dark);
+  color: var(--primary-strong);
 }
 
+/* ============ 折叠的更新日志 ============ */
+details.card {
+  padding: 0;
+}
+details.card summary {
+  cursor: pointer;
+  list-style: none;
+  margin: 0;
+  padding: 24px 28px;
+  user-select: none;
+}
+details.card summary::-webkit-details-marker {
+  display: none;
+}
+details.card summary .chevron {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+details.card[open] summary .chevron {
+  transform: rotate(90deg);
+}
+details.card summary .latest {
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+details.card ul {
+  padding: 0 28px 24px calc(28px + 1.3em);
+}
+
+/* ============ 页脚 ============ */
+.footer {
+  margin-top: 48px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.footer p {
+  margin: 4px 0;
+}
+
+/* ============ 移动端 ============ */
 @media (max-width: 640px) {
   .container {
-    padding: 36px 16px 56px;
+    padding: 40px 16px 40px;
   }
   .title {
-    font-size: 26px;
+    font-size: 25px;
   }
   .upload-block {
     font-size: 17px;
     padding: 28px 16px;
   }
-  .card {
+  .card,
+  details.card summary {
     padding: 20px;
+  }
+  details.card ul {
+    padding: 0 20px 20px calc(20px + 1.3em);
   }
 }
