@@ -1,192 +1,147 @@
-import { IGradeRecord, IRankRecord, IStudent } from "./types"
+import { IGradeRecord, IRankRecord, IStudent } from './types'
 
-const fwNumberMapping: Record<string, string> = {
-  '１': '1',
-  '２': '2',
-  '３': '3',
-  '４': '4',
-  '５': '5',
-  '６': '6',
-  '７': '7',
-  '８': '8',
-  '９': '9',
-  '０': '0',
-}
+/** 成绩为这些标记时不计入“已修学分” */
+const EXCLUDED_GRADES = ['W', 'I', '*', 'F']
+/** 计入“必修限选”统计的课程属性 */
+const REQUIRED_TYPES = ['必修', '限选']
 
-function floatEqual(f1: number, f2: number) {
-  return Math.abs(f1 - f2) < 1e-6
-}
+const floatEqual = (a: number, b: number) => Math.abs(a - b) < 1e-6
 
-function fullWidthConvert(fw: string): string {
-  const resList: string[] = []
-  for (let i = 0; i < fw.length; i++) {
-    resList.push(fwNumberMapping[fw[i]] || fw[i])
-  }
-  return resList.join('')
+/** 全角数字转半角（教学班级字段中可能出现全角数字） */
+function fullWidthConvert(s: string): string {
+  return s.replace(/[０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
 }
 
 /**
- * Calculate GPA and rank for each student
- * @param records grade records from excel
- * @returns rank records that can be written to excel
+ * 按 GPA 降序赋名次：GPA 相同（1e-6 容差）者并列同一名次，
+ * 采用标准竞赛排名（如 1、2、2、4）。
+ * @returns 存在并列情况的学生学号集合
+ */
+function rankByGpa(
+  students: IStudent[],
+  gpaOf: (s: IStudent) => number,
+  setRank: (s: IStudent, rank: number) => void,
+): Set<string> {
+  const sorted = [...students].sort((a, b) => gpaOf(b) - gpaOf(a))
+  const tied = new Set<string>()
+  let rank = 0
+  for (let i = 0; i < sorted.length; i++) {
+    const sameAsPrev = i > 0 && floatEqual(gpaOf(sorted[i]), gpaOf(sorted[i - 1]))
+    if (!sameAsPrev) rank = i + 1
+    setRank(sorted[i], rank)
+    if (sameAsPrev) {
+      tied.add(sorted[i - 1].id)
+      tied.add(sorted[i].id)
+    }
+  }
+  return tied
+}
+
+/**
+ * 计算每位学生的 GPA 与年级/班级排名
+ * @param records 成绩册中的全部记录
+ * @returns 可写入 Excel 的结果行，按年级排名(全部)升序排列
  */
 export function calculateGpaAndRank(records: IGradeRecord[]): IRankRecord[] {
-  const classRankMapping: Record<string, any[]> = {}
-  const studentMapping: Record<string, IStudent> = {}
-  console.log("records", records)
-  for (let row of records) {
-    const classNo = fullWidthConvert(row['教学班级'])
-    const studentId = row['学号']
-    const gradeAlpha = row['成绩']
-    const grade = row['绩点成绩']
-    const credit = row['学分']
-    const courseType = row['课程属性']
+  const students = new Map<string, IStudent>()
 
-    if (!classRankMapping[classNo]) {
-      classRankMapping[classNo] = []
-    }
-    if (!studentMapping[studentId]) {
-      studentMapping[studentId] = {
-        id: studentId,
+  for (const row of records) {
+    let student = students.get(row['学号'])
+    if (!student) {
+      student = {
+        id: row['学号'],
         name: row['姓名'],
-        classNo: classNo,
+        classNo: fullWidthConvert(row['教学班级']),
         courses: [],
-        totalCredits: {
-          required: 0,
-          all: 0,
-        },
-        credits: {
-          required: 0,
-          all: 0,
-        },
-        gpa: {
-          required: 0,
-          all: 0,
-        },
+        totalCredits: { required: 0, all: 0 },
+        credits: { required: 0, all: 0 },
+        gpa: { required: 0, all: 0 },
         allRank: 0,
         requiredRank: 0,
         classAllRank: 0,
         classRequiredRank: 0,
       }
+      students.set(student.id, student)
     }
 
-    if (!['W', 'I', '*', 'F'].includes(gradeAlpha)) {
-      if (['必修', '限选'].includes(courseType)) {
-        studentMapping[studentId].totalCredits.required += parseFloat(credit)
-      }
-      studentMapping[studentId].totalCredits.all += parseFloat(credit)
+    const credit = parseFloat(row['学分'])
+    const courseType = row['课程属性']
+
+    if (!EXCLUDED_GRADES.includes(row['成绩'])) {
+      student.totalCredits.all += credit
+      if (REQUIRED_TYPES.includes(courseType)) student.totalCredits.required += credit
     }
 
-    try {
-      const parsedGrade = parseFloat(grade)
-      if (Number.isNaN(parsedGrade)) {
-        continue
-      }
-      studentMapping[studentId].courses.push({
-        grade: parsedGrade,
-        credit: parseFloat(credit),
-        courseType: courseType,
-      })
-    } catch (e) {
-      console.log('Invalid grade:', grade)
-    }
+    const grade = parseFloat(row['绩点成绩'])
+    if (Number.isNaN(grade)) continue
+    student.courses.push({ grade, credit, courseType })
   }
-  
-  for (let student of Object.values(studentMapping)) {
-    const courses = student.courses
-    let allGpa = 0
-    let requiredGpa = 0
+
+  for (const student of students.values()) {
+    let allSum = 0
     let allCredits = 0
+    let requiredSum = 0
     let requiredCredits = 0
-    for (let course of courses) {
-      if (['必修', '限选'].includes(course.courseType)) {
-        requiredGpa += course.grade * course.credit
+    for (const course of student.courses) {
+      allSum += course.grade * course.credit
+      allCredits += course.credit
+      if (REQUIRED_TYPES.includes(course.courseType)) {
+        requiredSum += course.grade * course.credit
         requiredCredits += course.credit
       }
-      allGpa += course.grade * course.credit
-      allCredits += course.credit
     }
-    student.gpa.all = allCredits > 0 ? allGpa / allCredits : 0
-    student.gpa.required = requiredCredits > 0 ? requiredGpa / requiredCredits : 0
-    student.credits = {
-      required: requiredCredits,
-      all: allCredits,
-    }
+    student.gpa.all = allCredits > 0 ? allSum / allCredits : 0
+    student.gpa.required = requiredCredits > 0 ? requiredSum / requiredCredits : 0
+    student.credits = { required: requiredCredits, all: allCredits }
   }
 
-  // Sort students by required GPA
-  const students = Object.values(studentMapping)
-  students.sort((a, b) => {
-    if (floatEqual(a.gpa.required, b.gpa.required)) {
-      return 0
-    }
-    return a.gpa.required > b.gpa.required ? -1 : 1
-  })
+  const all = [...students.values()]
+  const tiedAll = rankByGpa(all, (s) => s.gpa.all, (s, r) => (s.allRank = r))
+  const tiedRequired = rankByGpa(all, (s) => s.gpa.required, (s, r) => (s.requiredRank = r))
 
-  for (let i = 0; i < students.length; i++) {
-    students[i].requiredRank = i + 1
+  // 按班级分组，每个班级只排序一次
+  const tiedClassAll = new Set<string>()
+  const tiedClassRequired = new Set<string>()
+  const byClass = new Map<string, IStudent[]>()
+  for (const student of all) {
+    const list = byClass.get(student.classNo) ?? []
+    list.push(student)
+    byClass.set(student.classNo, list)
+  }
+  for (const classStudents of byClass.values()) {
+    rankByGpa(classStudents, (s) => s.gpa.all, (s, r) => (s.classAllRank = r))
+      .forEach((id) => tiedClassAll.add(id))
+    rankByGpa(classStudents, (s) => s.gpa.required, (s, r) => (s.classRequiredRank = r))
+      .forEach((id) => tiedClassRequired.add(id))
   }
 
-  // Sort students by all GPA
-  students.sort((a, b) => {
-    if (floatEqual(a.gpa.all, b.gpa.all)) {
-      return 0
-    }
-    return a.gpa.all > b.gpa.all ? -1 : 1
-  })
+  return all
+    .sort((a, b) => a.allRank - b.allRank)
+    .map((s) => {
+      const tiedLabels = [
+        [tiedAll, '年级排名(全部)'],
+        [tiedRequired, '年级排名(必限)'],
+        [tiedClassAll, '班级排名(全部)'],
+        [tiedClassRequired, '班级排名(必限)'],
+      ]
+        .filter(([set]) => (set as Set<string>).has(s.id))
+        .map(([, label]) => label as string)
 
-  for (let i = 0; i < students.length; i++) {
-    students[i].allRank = i + 1
-  }
-
-  for (let student of students) {
-    classRankMapping[student.classNo].push(student)
-  }
-
-  // Sort students by class
-  for (let student of students) {
-    const classNo = student.classNo
-    const classStudents = classRankMapping[classNo]
-
-    classStudents.sort((a, b) => {
-      if (floatEqual(a.gpa.all, b.gpa.all)) {
-        return 0
+      return {
+        '年级排名(全部)': String(s.allRank),
+        '年级排名(必限)': String(s.requiredRank),
+        '班级排名(全部)': String(s.classAllRank),
+        '班级排名(必限)': String(s.classRequiredRank),
+        '学号': s.id,
+        '姓名': s.name,
+        '班级': s.classNo,
+        '全部课程GPA': s.gpa.all.toFixed(6),
+        '全部课程学分': s.credits.all.toFixed(1),
+        '必修限选GPA': s.gpa.required.toFixed(6),
+        '必修限选学分': s.credits.required.toFixed(1),
+        '已修总学分数': s.totalCredits.all.toFixed(1),
+        '已修必限学分数': s.totalCredits.required.toFixed(1),
+        '备注': tiedLabels.length > 0 ? `存在相同 GPA 并列同一名次：${tiedLabels.join('、')}` : '',
       }
-      return a.gpa.all > b.gpa.all ? -1 : 1
     })
-    for (let i = 0; i < classStudents.length; i++) {
-      classStudents[i].classAllRank = i + 1
-    }
-
-    classStudents.sort((a, b) => {
-      if (floatEqual(a.gpa.required, b.gpa.required)) {
-        return 0
-      }
-      return a.gpa.required > b.gpa.required ? -1 : 1
-    })
-    for (let i = 0; i < classStudents.length; i++) {
-      classStudents[i].classRequiredRank = i + 1
-    }
-  }
-
-  const result: IRankRecord[] = []
-  for (let student of students) {
-    result.push({
-      '年级排名(全部)': student.allRank.toString(),
-      '年级排名(必限)': student.requiredRank.toString(),
-      '班级排名(全部)': student.classAllRank.toString(),
-      '班级排名(必限)': student.classRequiredRank.toString(),
-      '学号': student.id,
-      '姓名': student.name,
-      '班级': student.classNo,
-      '全部课程GPA': student.gpa.all.toFixed(6),
-      '全部课程学分': student.credits.all.toFixed(1),
-      '必修限选GPA': student.gpa.required.toFixed(6),
-      '必修限选学分': student.credits.required.toFixed(1),
-      '已修总学分数': student.totalCredits.all.toFixed(1),
-      '已修必限学分数': student.totalCredits.required.toFixed(1),
-    })
-  }
-  console.log("results", result)
-  return result
 }

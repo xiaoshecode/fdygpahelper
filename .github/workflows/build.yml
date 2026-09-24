@@ -5,6 +5,10 @@ on:
     branches:
       - master
 
+# 允许默认 GITHUB_TOKEN 推送 gh-pages 分支
+permissions:
+  contents: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -15,10 +19,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
+
+      - name: Enable Yarn
+        run: corepack enable
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Build project
         run: yarn build
@@ -29,6 +36,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
           publish_branch: gh-pages
-          # 自动部署到 gh-pages 分支
-          # 保留历史，方便回滚
-          # keep_files: false
