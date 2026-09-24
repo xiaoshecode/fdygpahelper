@@ -1,4 +1,4 @@
-# FdyGPAHelper（THU GPA Helper）
+# FdyGPAHelper
 
 提供给清华大学辅导员使用的 GPA 计算工具：上传从信息门户导出的成绩册，在**浏览器本地**计算同学们的必修限选 GPA、全部课程 GPA 以及年级/班级排名，并生成 Excel 结果表下载。无后端，成绩数据不会离开你的电脑。
 
