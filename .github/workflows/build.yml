@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+  # 允许在 Actions 页面手动触发，方便调试和重新部署
+  workflow_dispatch:
 
 # 官方 Pages 部署所需的权限
 permissions:
@@ -14,8 +16,12 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+# 依赖安装与构建环境的公共步骤，各 job 复用
+# （GitHub Actions 不支持 YAML 锚点外的步骤复用，保持显式写出，便于单步定位问题）
 jobs:
-  build:
+  # 第 1 步：安装依赖并做类型检查，问题最早暴露
+  check:
+    name: 1. 安装依赖 + 类型检查
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -25,6 +31,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'yarn'
 
       - name: Enable Yarn
         run: corepack enable
@@ -32,15 +39,44 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build project
-        run: yarn build
+      - name: Type check
+        run: yarn typecheck
+
+  # 第 2 步：构建静态产物并上传为 Pages artifact
+  build:
+    name: 2. 构建产物
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Enable Yarn
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build (vite)
+        run: yarn build:vite
+
+      - name: List build output
+        run: ls -la dist && du -sh dist
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
 
+  # 第 3 步：部署到 GitHub Pages
   deploy:
+    name: 3. 部署到 Pages
     needs: build
     runs-on: ubuntu-latest
     environment:

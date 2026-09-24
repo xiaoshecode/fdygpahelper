@@ -5,7 +5,9 @@
   "packageManager": "yarn@1.22.22",
   "scripts": {
     "dev": "vite",
+    "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
+    "build:vite": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {

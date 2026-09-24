@@ -122,6 +122,16 @@ server {
 
 本仓库推送代码到 `master` 分支后，GitHub Actions 会自动构建并发布到 GitHub Pages（见 `.github/workflows/build.yml`），无需手动操作。
 
+部署流程拆分为三个独立步骤，便于定位问题：
+
+1. **安装依赖 + 类型检查**（`yarn install` + `tsc --noEmit`）
+2. **构建产物**（`vite build`，并打印产物清单）
+3. **部署到 Pages**（官方 `actions/deploy-pages`）
+
+某一步失败时，只需在仓库 **Actions** 页面点开对应运行记录，即可看到该步骤的详细日志，并可用 **Re-run failed jobs** 只重跑失败步骤。也可以在 Actions 页面点 **Run workflow** 手动触发一次完整部署（无需推送代码）。
+
+> 需要更详细的日志时：在仓库 **Settings → Secrets and variables → Actions** 中添加名为 `ACTIONS_STEP_DEBUG`、值为 `true` 的 secret，之后每次运行都会输出调试级日志。
+
 ## 输出表格说明
 
 生成的 Excel 包含以下列：
