@@ -40,7 +40,8 @@ document.querySelector<HTMLDivElement>('#root')!.innerHTML = `
           <li><strong>年级排名</strong>指该同学在同时上传的若干文件所包含的同学中处在多少名。
             如需计算多个班级的排名，请从“所有成绩查询”中导出这些班级的成绩册一起上传，
             或是从“近期成绩查询”中导出整个年级的成绩册。</li>
-          <li>GPA 相同的同学<strong>并列同一名次</strong>，并在结果表的“备注”列中标注提醒。</li>
+          <li>排名按<strong>未四舍五入的精确成绩</strong>计算：GPA 完全相同者并列同一名次；
+            若 GPA 保留 6 位小数后显示值相同但精确值不同，名次以精确成绩为准，并会在结果表的“备注”列中说明。</li>
           <li>导出的成绩册文件至少需要包含【姓名】【学号】【教学班级】【成绩】【绩点成绩】【学分】【课程属性】七列。</li>
           <li>源代码地址：<a href="https://github.com/xiaoshecode/FdyGPAHelper" target="_blank" rel="noreferrer">github.com/xiaoshecode/FdyGPAHelper</a></li>
         </ul>
@@ -50,7 +51,8 @@ document.querySelector<HTMLDivElement>('#root')!.innerHTML = `
         <h2>更新日志</h2>
         <ul>
           <li>2026.09.24: 0.3.0 精简升级——去除 React / antd，改为纯 TypeScript 实现，页面加载更快；
-            支持上传 .xlsx 文件；GPA 相同者并列同一名次并在“备注”列标注；部署仅保留 GitHub Actions</li>
+            支持上传 .xlsx 文件；排名改用未四舍五入的精确成绩，GPA 完全相同者并列同一名次，
+            仅显示值相同的情况在“备注”列说明；部署仅保留 GitHub Actions</li>
           <li>2025.09.16: <a href="https://github.com/xiaoshecode" target="_blank" rel="noreferrer">xiaoshe</a>
             copy from <a href="https://github.com/PowerfooI" target="_blank" rel="noreferrer">powerfooi</a>，继续维护</li>
           <li>2024.09.08: 去除后端 Python 部分，全部计算均在浏览器上完成；矫正“已修”学分的计算；网站迁移到 GitHub Pages</li>
