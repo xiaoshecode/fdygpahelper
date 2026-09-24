@@ -6,7 +6,7 @@ xiaoshe copy by powerfool
 
 ## 使用方法
 
-- 访问线上版本: 直接访问部署在该仓库的 GitHub Pages 上的版本 [GPA-Helper](https://xiaoshecode.github.io/FdyGPAHelper/)
+- 访问线上版本: 直接访问部署在该仓库的 GitHub Pages 上的版本 [GPA-Helper](https://xiaoshecode.github.io/fdygpahelper/)
 - 本地开发模式: 将该仓库代码克隆到本地，使用 `yarn` 安装依赖，然后使用 `yarn dev` 启动本地开发服务器
 
 ## 部署
