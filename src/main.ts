@@ -43,7 +43,7 @@ document.querySelector<HTMLDivElement>('#root')!.innerHTML = `
           <li>排名按<strong>未四舍五入的精确成绩</strong>计算：GPA 完全相同者并列同一名次；
             若 GPA 保留 6 位小数后显示值相同但精确值不同，名次以精确成绩为准，并会在结果表的“备注”列中说明。</li>
           <li>导出的成绩册文件至少需要包含【姓名】【学号】【教学班级】【成绩】【绩点成绩】【学分】【课程属性】七列。</li>
-          <li>源代码地址：<a href="https://github.com/xiaoshecode/FdyGPAHelper" target="_blank" rel="noreferrer">github.com/xiaoshecode/FdyGPAHelper</a></li>
+          <li>源代码地址：<a href="https://github.com/xiaoshecode/fdygpahelper" target="_blank" rel="noreferrer">github.com/xiaoshecode/fdygpahelper</a></li>
         </ul>
       </section>
 

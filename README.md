@@ -67,11 +67,11 @@ yarn -v
 #### 第 3 步：获取代码
 
 ```shell
-git clone https://github.com/xiaoshecode/FdyGPAHelper.git
-cd FdyGPAHelper
+git clone https://github.com/xiaoshecode/fdygpahelper.git
+cd fdygpahelper
 ```
 
-> 没有安装 Git 的话，也可以在 [仓库页面](https://github.com/xiaoshecode/FdyGPAHelper) 点击 **Code → Download ZIP** 下载压缩包并解压，然后在终端中进入解压后的目录。
+> 没有安装 Git 的话，也可以在 [仓库页面](https://github.com/xiaoshecode/fdygpahelper) 点击 **Code → Download ZIP** 下载压缩包并解压，然后在终端中进入解压后的目录。
 
 #### 第 4 步：安装依赖
 
