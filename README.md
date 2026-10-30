@@ -2,7 +2,7 @@
 
 提供给清华大学辅导员使用的 GPA 计算工具：上传从信息门户导出的成绩册，在**浏览器本地**计算同学们的必修限选 GPA、全部课程 GPA 以及年级/班级排名，并生成 Excel 结果表下载。无后端，成绩数据不会离开你的电脑。
 
-> 本项目 fork 自 [PowerfooI/THU-GPA-Helper](https://github.com/PowerfooI)，由 xiaoshe 继续维护，方便修改和查看源代码。
+> 本项目 fork 自 [powerfooI/gpa-helper](https://github.com/powerfooI/gpa-helper)，由 xiaoshe 继续维护，方便修改和查看源代码。
 
 ## 功能特性
 
@@ -165,3 +165,12 @@ server {
 
 - 感谢原作者 [powerfooi](https://github.com/PowerfooI) 的贡献与支持
 - 联系方式：shejp20@gmail.com
+
+## 维护与在线文档
+
+本仓库是 [powerfooI/gpa-helper](https://github.com/powerfooI/gpa-helper) 的 Fork，保留上游来源、目录约定及许可证。
+
+- [在线维护文档](https://xiaoshecode.github.io/xiaoshecode/repos/fdygpahelper/)
+- [仓库维护说明](MAINTENANCE.md)：用途、环境、目录结构、检查结果和待验证事项。
+
+2026-10-30 的检查范围以维护说明为准；语法检查通过不代表完整构建、模型训练或硬件验证通过。
