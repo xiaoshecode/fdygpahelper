@@ -1,4 +1,4 @@
-import { IGradeRecord, IRankRecord, IStudent } from './types'
+import type { IGradeRecord, IRankRecord, IStudent } from './types'
 
 /** 成绩为这些标记时不计入“已修学分” */
 const EXCLUDED_GRADES = ['W', 'I', '*', 'F']
